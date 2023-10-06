@@ -44,7 +44,7 @@ class SearchNode:
 
         valid_adjacent = []
         for node in adjacent:
-            if node.x > 0 and node.x <= 4 and node.y > 0 and node.y <= 4:
+            if node.x >= 0 and node.x < 5 and node.y >= 0 and node.y < 5:
                 valid_adjacent.append(node)
 
         return valid_adjacent
@@ -78,8 +78,8 @@ def search(root_node):
 
         # queue adjacent nodes that are not in current's parent chain
         pruneChecks = [
-            candidate_word[:2] in redundant_starters_two, candidate_word[:3]
-            in redundant_starters_three
+            candidate_word[:2] in redundant_starters_two, 
+            candidate_word[:3] in redundant_starters_three
         ]
 
         if True not in pruneChecks:
