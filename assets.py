@@ -27,26 +27,48 @@ letter_values = {
     "z": 8
 }
 
-def word_score(word):
-    score = 0
-    for letter in list(word):
-        score += letter_values[letter]
-
-    if len(word) >= 6:
-        score += 10
-    
-    return score
-
 def load_board():
     board_file = open("position.txt", "r").read().split("\n")
     board_file = [list(row) for row in board_file]
+
+    for i in range(len(board_file)):
+        board_file[i] = [tile for tile in board_file[i] if tile not in list("$+*")]
+
     return board_file
 
-def load_dictionary():
-    dictionary_file = open("dictionary.txt", "r").read().split("\n")
-    dictionary_file = [word.lower() for word in dictionary_file]
+def load_boosts():
+    board_file = open("position.txt", "r").read().split("\n")
+    board_file = [list(row) for row in board_file]
+
+    boosts = {
+        "$": [],
+        "+": [],
+        "*": []
+    }
+
+    for y, row in enumerate(board_file):
+        x_offset = 1
+        for x, tile in enumerate(row):
+            if tile in list("$+*"):
+                boosts[tile].append([x - x_offset, y])
+                x_offset += 1
+
+    return boosts
+
+dictionary_cache = None
+def load_dictionary(letter_count = None):
+    global dictionary_cache
+    
+    dictionary_file = None
+
+    if dictionary_cache is None:
+        dictionary_file = open("dictionary.txt", "r").read().split("\n")
+        dictionary_cache = dictionary_file
+    else:
+        dictionary_file = [word[:letter_count] for word in dictionary_cache]
+    
     return set(dictionary_file)
 
 def load_redundant_starters(length):
-    starters_file = open(f"redundant-{length}.txt", "r").read().split("\n")
+    starters_file = open(f"caches/redundant-{length}.txt", "r").read().split("\n")
     return set(starters_file)
