@@ -1,26 +1,42 @@
 from time import time
 
-from search import search_board
+from search import search_board, Move
 
 # take time for profiling
 start_time = time()
 
 # search the board
-words = search_board(depth=12)
+print("Starting search for best move...")
+moves = search_board(depth=12)
 
 # remove duplicate words
-unique_words = []
-for node in words:
-    if node.word() not in [unique_node.word() for unique_node in unique_words]:
-        unique_words.append(node)
-words = unique_words
+unique_moves = []
+for move in moves:
+    if Move.extract_word(move) not in [Move.extract_word(unique_move) for unique_move in unique_moves if not unique_move.swap]:
+        unique_moves.append(move)
+moves = unique_moves
 
 # sort words by score
-words.sort(key=lambda node : node.score(), reverse=True)
+moves.sort(key=lambda move : move.score, reverse=True)
+
+# separate by swaps and no swaps
+swap_moves = []
+no_swap_moves = []
+
+for move in moves:
+    if move.swap:
+        swap_moves.append(move)
+    else:
+        no_swap_moves.append(move)
 
 # display top computer moves
-for i, node in enumerate(words[:10]):
-    print(f"{i + 1}. {node.word()} - {node.score()} points")
+print("MOVES WITH SWAPS")
+for i, move in enumerate(swap_moves[:5]):
+    print(f"{i + 1}. {move.swap_result} via swap at ({move.swapped_node.x + 1}, {move.swapped_node.y + 1}) to {move.swapped_letter} - {move.score} points")
 
-print(f"Search complete (elapsed time: {round(time() - start_time, 3)}s)")
-print(f"Found {len(words)} words.")
+print("\nMOVES WITHOUT SWAPS")
+for i, move in enumerate(no_swap_moves[:5]):
+    print(f"{i + 1}. {move.frontal_node.word()} - {move.score} points")
+
+print("\nSearch completed!")
+print(f"Words Found: {len(moves)}\nElapsed Time: {round(time() - start_time, 3)}s")

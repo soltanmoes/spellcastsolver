@@ -1,6 +1,7 @@
 from collections import deque
+from copy import deepcopy
 
-from assets import load_board, load_boosts, load_dictionary, letter_values
+from assets import load_board, load_boosts, load_dictionary, letter_values, alphabet
 
 # load in dictionary and redundant starters cache
 dictionary = load_dictionary()
@@ -64,6 +65,23 @@ class SearchNode:
             score += 10
 
         return score
+    
+    def chain(self):
+        nodes = deque()
+        curr = self
+        while True:
+            nodes.appendleft(curr)
+            if curr.parent is None:
+                break
+            else:
+                curr = curr.parent
+        return list(nodes)
+    
+    def chain_contains(self, target_node):
+        for node in self.chain():
+            if node.x == target_node.x and node.y == target_node.y:
+                return True
+        return False
 
     def adjacent_nodes(self):
         adjacent = []
@@ -82,20 +100,31 @@ class SearchNode:
                 valid_adjacent.append(node)
 
         return valid_adjacent
+    
 
-    def chain_contains(self, target_node):
-        curr = self
-        while True:
-            if curr.x == target_node.x and curr.y == target_node.y:
-                return True
-            elif curr.parent is None:
-                return False
-            else:
-                curr = curr.parent
+class Move:
+    swap = False
+    swapped_node: SearchNode = None
+    swapped_letter: str = None
+    swap_result: str = None
+
+    score = 0
+
+    def __init__(self, frontal_node: SearchNode, score: int):
+        self.frontal_node = frontal_node
+        self.score = score
+
+    def extract_word(move):
+        if move.swap:
+            return move.swap_result
+        else:
+            return move.frontal_node.word()
 
 
 def search_from_node(root_node, depth):
-    words = deque()
+    global board
+
+    moves = deque()
 
     frontier = deque()
     frontier.appendleft(root_node)
@@ -106,7 +135,34 @@ def search_from_node(root_node, depth):
         # if current branch is a word log its frontal node
         candidate_word = curr.word()
         if candidate_word in dictionary:
-            words.appendleft(curr)
+            moves.appendleft(Move(curr, curr.score()))
+
+        # check all possible swaps in chain
+        candidate_chain: list[SearchNode] = curr.chain()
+        for swap_focus_index in range(len(candidate_word)):
+            for letter in alphabet:
+                # get resulting word of the swap
+                candidate_swap_result = list(candidate_word)
+                candidate_swap_result[swap_focus_index] = letter
+                candidate_swap_result = "".join(candidate_swap_result)
+
+                # if resulting word is in the dictionary
+                if candidate_swap_result in dictionary:
+                    # create virtual board and apply swap to it
+                    board_copy = deepcopy(board)
+                    board[candidate_chain[swap_focus_index].y][candidate_chain[swap_focus_index].x] = letter
+
+                    # generate move object
+                    candidate_swap_move = Move(curr, curr.score())
+                    candidate_swap_move.swap = True
+                    candidate_swap_move.swap_result = candidate_swap_result
+                    candidate_swap_move.swapped_letter = letter
+                    candidate_swap_move.swapped_node = candidate_chain[swap_focus_index]
+
+                    # add the swap move to the found moves list
+                    moves.appendleft(candidate_swap_move)
+
+                    board = board_copy
 
         # if maximum search depth reached, terminate search
         if len(candidate_word) > depth:
@@ -126,15 +182,15 @@ def search_from_node(root_node, depth):
                 if not curr.chain_contains(adjacent_node):
                     frontier.appendleft(adjacent_node)
 
-    return list(words)
+    return list(moves)
 
-def search_board(depth):
+def search_board(depth) -> list[Move]:
     global dictionary_caches
     dictionary_caches = [load_dictionary(x) for x in range(2, depth)]
 
     words = []
     for y in range(5):
         for x in range(5):
-            print(f"Searching from root node at ({x}, {y})...")
             words += search_from_node(SearchNode(None, x, y), depth)
+
     return words

@@ -1,3 +1,5 @@
+alphabet = list("abcdefghijklmnopqrstuvwxyz")
+
 letter_values = {
     "a": 1,
     "b": 4,
