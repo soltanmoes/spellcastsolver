@@ -3,7 +3,7 @@ from copy import deepcopy
 
 from assets import load_board, load_boosts, load_dictionary, letter_values, alphabet
 
-# load in dictionary and redundant starters cache
+# load in dictionaries
 dictionary = load_dictionary()
 dictionary_caches = []
 
@@ -138,31 +138,31 @@ def search_from_node(root_node, depth):
             moves.appendleft(Move(curr, curr.score()))
 
         # check all possible swaps in chain
-        candidate_chain: list[SearchNode] = curr.chain()
-        for swap_focus_index in range(len(candidate_word)):
-            for letter in alphabet:
-                # get resulting word of the swap
-                candidate_swap_result = list(candidate_word)
-                candidate_swap_result[swap_focus_index] = letter
-                candidate_swap_result = "".join(candidate_swap_result)
+        # candidate_chain: list[SearchNode] = curr.chain()
+        # for swap_focus_index in range(len(candidate_word)):
+        #     for letter in alphabet:
+        #         # get resulting word of the swap
+        #         candidate_swap_result = list(candidate_word)
+        #         candidate_swap_result[swap_focus_index] = letter
+        #         candidate_swap_result = "".join(candidate_swap_result)
 
-                # if resulting word is in the dictionary
-                if candidate_swap_result in dictionary:
-                    # create virtual board and apply swap to it
-                    board_copy = deepcopy(board)
-                    board[candidate_chain[swap_focus_index].y][candidate_chain[swap_focus_index].x] = letter
+        #         # if resulting word is in the dictionary
+        #         if candidate_swap_result in dictionary:
+        #             # create virtual board and apply swap to it
+        #             board_copy = deepcopy(board)
+        #             board[candidate_chain[swap_focus_index].y][candidate_chain[swap_focus_index].x] = letter
 
-                    # generate move object
-                    candidate_swap_move = Move(curr, curr.score())
-                    candidate_swap_move.swap = True
-                    candidate_swap_move.swap_result = candidate_swap_result
-                    candidate_swap_move.swapped_letter = letter
-                    candidate_swap_move.swapped_node = candidate_chain[swap_focus_index]
+        #             # generate move object
+        #             candidate_swap_move = Move(curr, curr.score())
+        #             candidate_swap_move.swap = True
+        #             candidate_swap_move.swap_result = candidate_swap_result
+        #             candidate_swap_move.swapped_letter = letter
+        #             candidate_swap_move.swapped_node = candidate_chain[swap_focus_index]
 
-                    # add the swap move to the found moves list
-                    moves.appendleft(candidate_swap_move)
+        #             # add the swap move to the found moves list
+        #             moves.appendleft(candidate_swap_move)
 
-                    board = board_copy
+        #             board = board_copy
 
         # if maximum search depth reached, terminate search
         if len(candidate_word) > depth:

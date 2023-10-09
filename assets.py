@@ -1,3 +1,5 @@
+dictionary = open("dictionary.txt", "r").read().split("\n")
+
 alphabet = list("abcdefghijklmnopqrstuvwxyz")
 
 letter_values = {
@@ -38,6 +40,7 @@ def load_board():
 
     return board_file
 
+
 def load_boosts():
     board_file = open("position.txt", "r").read().split("\n")
     board_file = [list(row) for row in board_file]
@@ -57,19 +60,10 @@ def load_boosts():
 
     return boosts
 
-dictionary_cache = None
-def load_dictionary(letter_count = None):
-    global dictionary_cache
-    
-    dictionary_file = None
 
-    if dictionary_cache is None:
-        dictionary_file = open("dictionary.txt", "r").read().split("\n")
-        dictionary_cache = dictionary_file
-    else:
-        dictionary_file = [word[:letter_count] for word in dictionary_cache]
-    
-    return set(dictionary_file)
+def load_dictionary(letter_count = None):    
+    return set([word[:letter_count] for word in dictionary])
+
 
 def load_redundant_starters(length):
     starters_file = open(f"caches/redundant-{length}.txt", "r").read().split("\n")
